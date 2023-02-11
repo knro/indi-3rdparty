@@ -20,14 +20,11 @@
 
 #pragma once
 
-//#include "indipropertyswitch.h"
-//#include "indipropertynumber.h"
-//#include "indipropertytext.h"
 #include "indisinglethreadpool.h"
 
-#include "core/libcamera_app.hpp"
-#include "core/libcamera_encoder.hpp"
-#include "core/still_options.hpp"
+#include <core/libcamera_app.hpp>
+#include <core/libcamera_encoder.hpp>
+#include <core/still_options.hpp>
 
 #include <vector>
 
@@ -123,6 +120,8 @@ class INDILibCamera : public INDI::CCD
         INDI::PropertyNumber GainNP {1};
 
         std::unique_ptr<LibcameraEncoder> m_CameraApp;
+
+        std::vector<std::shared_ptr<libcamera::Camera>> m_Cameras;
 
         int m_LiveVideoWidth {-1}, m_LiveVideoHeight {-1};
 
