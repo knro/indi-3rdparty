@@ -29,6 +29,81 @@
 #include <inditimer.h>
 #include <indisinglethreadpool.h>
 
+#ifdef LEGACY_MODE
+/* Pointing parameter */
+typedef enum {	/* N.B. order must match array in vector pointing_elements[] */
+  RA2K_TP, DEC2K_TP, RAEOD_TP, DECEOD_TP, HA_TP, ALT_TP, AZ_TP, AM_TP,
+  PA_TP, XVEL_TP, YVEL_TP, XFE_TP, YFE_TP, FOCUS_TP, JD_TP, N_TP
+} PointingIndex;
+extern INumberVectorProperty pointing;
+
+
+/* SetCatalog parameter */
+typedef enum {	/* N.B. order must match array in vector setcatalog_elements[]*/
+  ENTRY_SC, N_SC
+} SetCatalogIndex;
+extern ITextVectorProperty setcatalog;
+
+
+/* SetAltAz parameter */
+typedef enum {	/* N.B. order must match array in vector setaltaz_elements[] */
+  ALT_SAA, AZ_SAA, N_SAA
+} SetAltAzIndex;
+extern INumberVectorProperty setaltaz;
+
+/* SetHADec parameter */
+typedef enum {	/* N.B. order must match array in vector sethadec_elements[] */
+  HA_SHD, DEC_SHD, N_SHD
+} SetHADecIndex;
+extern INumberVectorProperty sethadec;
+
+/* SetRADec2K parameter */
+typedef enum {	/* N.B. order must match array in vector setradec2k_elements[]*/
+  RA_SRD2K, DEC_SRD2K, N_SRD2K
+} SetRADec2KIndex;
+extern INumberVectorProperty setradec2k;
+
+/* SetVelocity parameter */
+typedef enum {	/*N.B. order must match array in vector setvelocity_elements[]*/
+  HA_SV, DEC_SV, N_SV
+} SetVelocityIndex;
+extern INumberVectorProperty setvelocity;
+
+/* Now parameter */
+typedef enum {	/* N.B. order must match array now_elements[] */
+  TEMP_NOW, DP_NOW, WINDC_NOW, AIRPR_NOW, HUMIDITY_NOW, WINDDIR_NOW,
+  WINDSPD_NOW, GUST_NOW, RAINACCUM_NOW, RAINDET_NOW, EFIELD_NOW,
+  EFIELDJD_NOW, N_NOW
+} NowIndex;
+extern INumberVectorProperty envnow;
+
+/* roof/ram states.
+ * N.B. values must match ROOF/RAM_NOW
+ */
+typedef enum {
+    RRMIDWAY = -1, RRCLOSED = 0, RROPENED = 1
+} RRState;
+
+/* Now parameter */
+typedef enum {	/* N.B. order must match array below */
+  H1_OWNOW, D1_OWNOW, T1_OWNOW,
+  H2_OWNOW, D2_OWNOW, T2_OWNOW,
+  H3_OWNOW, D3_OWNOW, T3_OWNOW,
+  T4_OWNOW,
+  T5_OWNOW,
+  ROOF_OWNOW, RAM_OWNOW,
+  N_OWNOW
+} OWNowIndex;
+extern INumberVectorProperty ownow;
+
+/* Blind parameter */
+typedef enum {  /* N.B. order must match array in vector blind_elements[] */
+  OPEN_BLD, N_BLD
+} BlindIndex;
+extern ISwitchVectorProperty blind;
+
+#endif
+
 class Kepler : public INDI::CCD
 {
     public:
@@ -50,6 +125,7 @@ class Kepler : public INDI::CCD
         virtual bool ISNewNumber(const char *dev, const char *name, double values[], char *names[], int n) override;
         virtual bool ISNewSwitch(const char *dev, const char *name, ISState *states, char *names[], int n) override;
         virtual bool ISNewText(const char *dev, const char *name, char *texts[], char *names[], int n) override;
+        virtual bool ISSnoopDevice(XMLEle * root) override;
 
     protected:
         virtual int SetTemperature(double temperature) override;
@@ -136,6 +212,16 @@ class Kepler : public INDI::CCD
         void workerExposure(const std::atomic_bool &isAboutToQuit, float duration);
 
         //****************************************************************************************
+        // Legacy
+        //****************************************************************************************
+#ifdef LEGACY_MODE
+        void initMedianVels();
+        void addMedianVels();
+        void checkMaxFE();
+        void getMedianVels(double *mxvp, double *myvp);
+#endif
+
+        //****************************************************************************************
         // Variables
         //****************************************************************************************
         FPRODEVICEINFO m_CameraInfo;
@@ -166,6 +252,15 @@ class Kepler : public INDI::CCD
         // Gain Tables
         FPROGAINVALUE *m_LowGainTable {nullptr};
         FPROGAINVALUE *m_HighGainTable {nullptr};
+
+#ifdef LEGACY_MODE
+        /* collect and find median X/YVEL_TP and max X/YFE */
+        double *xvels {nullptr}, *yvels {nullptr};      /* malloced arrays */
+        int nxvels {0}, nyvels {0};                     /* n entries in each array */
+        double maxxfe {0}, maxyfe {0};                  /* max values */
+        double havel {0}, decvel {0};                   /* commanded velocity, if applicable */
+        char *OBJECT {nullptr};                         /* last-known target name */
+#endif
 
         static std::map<FPRODEVICETYPE, double> SensorPixelSize;
         static constexpr double TEMPERATURE_THRESHOLD {0.1};

@@ -36,6 +36,165 @@ constexpr auto to_underlying(E e) noexcept
     return static_cast<std::underlying_type_t<E>>(e);
 }
 
+#ifdef LEGACY_MODE
+/* Pointing parameter */
+static INumber pointing_elements[N_TP] =
+{
+    {"RA2K",     "RA@J2000, hours",               "%11.9m"},
+    {"Dec2K",    "Dec@J2000, degs",               "%11.8m"},
+    {"RAEOD",    "RA@EOD, hours",                 "%11.9m"},
+    {"DecEOD",   "Dec@EOD, degs",                 "%11.8m"},
+    {"HA",       "Hour angle, hours +W",          "%11.6m"},
+    {"Alt",      "Altitude, degs",                "%11.6m"},
+    {"Az",       "Azimuth, degs EofN",            "%11.6m"},
+    {"AM",       "Air mass",                      "%5.2f"},
+    {"PA",       "Parallactic angle, degs +W",    "%10.6m"},
+    {"XVel",     "X axis velocity, asec/sec",     "%10.3m"},
+    {"YVel",     "Y axis velocity, asec/sec",     "%10.3m"},
+    {"XFE",      "X axis following err, asec",    "%10.3m"},
+    {"YFE",      "Y axis following err, asec",    "%10.3m"},
+    {"Focus",    "Focus, um",    		  "%10.6m"},
+    {"JD",       "JD of these values",            "%13.5m"}
+};
+INumberVectorProperty pointing = {"Telescope", "Pointing",
+                                  "Telescope circumstances",
+                                  "", IP_RO, 0, IPS_IDLE, pointing_elements, NARRAY(pointing_elements)
+                                 };
+
+
+
+/* SetCatalog parameter */
+static IText setcatalog_elements[N_SC] =
+{
+    {"entry",     "Name,edb,tle"},
+};
+ITextVectorProperty setcatalog = {"Telescope", "SetCatalog",
+                                  "Track catalog, edb or TLE target",
+                                  "", IP_WO, 60, IPS_IDLE, setcatalog_elements, NARRAY(setcatalog_elements)
+                                 };
+
+
+
+/* SetAltAz parameter */
+static INumber setaltaz_elements[N_SAA] =
+{
+    {"Alt",      "Altitude, degs",             "%11.6m"},
+    {"Az",       "Azimuth, degs EofN",         "%11.6m"},
+};
+INumberVectorProperty setaltaz = {"Telescope", "SetAltAz",
+                                  "Slew to a specific Alt Az",
+                                  "", IP_WO, 60, IPS_IDLE, setaltaz_elements, NARRAY(setaltaz_elements)
+                                 };
+
+
+
+/* SetHADec parameter */
+static INumber sethadec_elements[N_SHD] =
+{
+    {"HA",      "Hour angle, hours",         "%11.6m"},
+    {"Dec",     "Declination, degs",         "%11.6m"},
+};
+INumberVectorProperty sethadec = {"Telescope", "SetHADec",
+                                  "Slew to a specific HA Dec",
+                                  "", IP_WO, 60, IPS_IDLE, sethadec_elements, NARRAY(sethadec_elements)
+                                 };
+
+
+
+/* SetRADec2K parameter */
+static INumber setradec2k_elements[N_SRD2K] =
+{
+    {"RA",        "RA @ J2000, hours",            "%11.6m"},
+    {"Dec",       "Dec @ J2000, degs",            "%11.6m"},
+};
+INumberVectorProperty setradec2k = {"Telescope", "SetRADec2K",
+                                    "Track an RA Dec @ J2000",
+                                    "", IP_WO, 60, IPS_IDLE, setradec2k_elements, NARRAY(setradec2k_elements)
+                                   };
+
+
+/* SetVelocity parameter */
+static INumber setvelocity_elements[N_SV] =
+{
+    {"HA",        "HA velocity, degs/sec",            "%8.5f"},
+    {"Dec",       "Dec velocity, degs/sec",           "%8.5f"},
+};
+INumberVectorProperty setvelocity = {"Telescope", "SetVelocity",
+                                     "Set constant slewing speed",
+                                     "", IP_WO, 0, IPS_IDLE, setvelocity_elements, NARRAY(setvelocity_elements)
+                                    };
+
+/* Now parameter */
+static INumber now_elements[N_NOW] =
+{
+    {"AirTemp",      "Air temp, C",                 "%7.1f"},
+    {"DewPoint",     "Dew point, C",                "%7.1f"},
+    {"WindChill",    "NWS Wind Chill, C",           "%7.1f"},
+    {"AirPressure",  "Air pressure, hPaB",          "%7.1f"},
+    {"Humidity",     "Humidity, percent",           "%7.1f"},
+    {"WindDir",      "Wind direction, degs E of N", "%7.1f"},
+    {"WindSpeed",    "Wind speed, mps",             "%7.1f"},
+    {"WindGust",     "Recent wind max, mps",        "%7.1f"},
+    {"RainAccum",    "Rain YTD, mm",                "%7.1f"},
+    {"RainDetected", "Rain in progress, 0 or 1",    "%7.1f"},
+    {"EField",       "E FIeld, V/m",                "%7.1f"},
+    {"EFieldJD",     "E FIeld time, JD",            "%13.5f"},
+};
+INumberVectorProperty envnow = {"Environment", "Now",
+                                "Environmental conditions now",
+                                "", IP_RO, 0, IPS_IDLE, now_elements, NARRAY(now_elements)
+                               };
+
+/* Now parameter */
+static INumber ownow_elements[N_OWNOW] =
+{
+    {"Humidity1", "humidity 1, %",                   "%7.1f"},
+    {"DewPoint1", "dew point 1, deg C",              "%7.1f"},
+    {"Temp1",     "temperature 1, deg C",            "%7.1f"},
+    {"Humidity2", "humidity 2, %",                   "%7.1f"},
+    {"DewPoint2", "dew point 2, deg C",              "%7.1f"},
+    {"Temp2",     "temperature 2, deg C",            "%7.1f"},
+    {"Humidity3", "humidity 3, %",                   "%7.1f"},
+    {"DewPoint3", "dew point 3, deg C",              "%7.1f"},
+    {"Temp3",     "temperature 3, deg C",            "%7.1f"},
+    {"Temp4",     "temperature 4, deg C",            "%7.1f"},
+    {"Temp5",     "temperature 5, deg C",            "%7.1f"},
+    {"RoofOpen",  "Roof: -1=midway 0=closed 1=open", "%3.0f", -1, 1, 0, -1},
+    {"RamOpen",   "Ram:  -1=midway 0=closed 1=open", "%3.0f", -1, 1, 0, -1},
+};
+INumberVectorProperty ownow = {"1-Wire", "Now",
+                               "1-Wire devices now",
+                               "", IP_RO, 0, IPS_IDLE, ownow_elements, NARRAY(ownow_elements)
+                              };
+
+
+/* Blind parameter */
+static ISwitch blind_elements[N_BLD] =
+{
+    {"Open",        "Open blind",    ISS_OFF}
+};
+ISwitchVectorProperty blind = {"1-Wire", "Blind",
+                               "Blind control",
+                               "", IP_WO, ISR_ATMOST1, 0., IPS_IDLE, blind_elements, NARRAY(blind_elements)
+                              };
+
+/* compare pointers to two doubles, qsort-style */
+static int med_cmpf(const void *p1, const void *p2)
+{
+    double diff = *(double *)p1 - *(double *)p2;
+    if (diff < 0)
+    {
+        return (-1);
+    }
+    if (diff > 0)
+    {
+        return (1);
+    }
+    return (0);
+}
+
+#endif
+
 /********************************************************************************
 *
 ********************************************************************************/
@@ -155,6 +314,11 @@ void Kepler::workerExposure(const std::atomic_bool &isAboutToQuit, float duratio
         LOGF_ERROR("%s: Failed to start exposure: %d", __PRETTY_FUNCTION__, result);
         return;
     }
+
+#ifdef LEGACY_MODE
+    initMedianVels();
+    maxxfe = maxyfe = 0;
+#endif
 
     PrimaryCCD.setExposureDuration(duration);
     LOGF_DEBUG("StartExposure->setexp : %.3fs", duration);
@@ -368,6 +532,13 @@ bool Kepler::initProperties()
     TemperatureReadNP[1].fill("Drive", "Cooler", "%.f", 0, 100, 10, 0);
     TemperatureReadNP.fill(getDeviceName(), "TempNow", "Cooler Temp.", LEGACY_TAB, IP_RO, 60, IPS_IDLE);
 
+    // Snoop TFRM devices.
+    IDSnoopDevice("Telescope", "Pointing");
+    IDSnoopDevice("Telescope", "SetCatalog");
+    IDSnoopDevice("Telescope", "SetVelocity");
+    IDSnoopDevice("Environment", "Now");
+    IDSnoopDevice("1-Wire", "Now");
+    IDSnoopDevice("1-Wire", "Blind");
 
 #endif
     addAuxControls();
@@ -643,6 +814,111 @@ bool Kepler::ISNewText(const char *dev, const char *name, char *texts[], char *n
     }
 
     return INDI::CCD::ISNewText(dev, name, texts, names, n);
+}
+
+/********************************************************************************
+*
+********************************************************************************/
+bool Kepler::ISSnoopDevice(XMLEle * root)
+{
+    IUSnoopNumber(root, &envnow);
+    IUSnoopNumber(root, &ownow);
+    IUSnoopSwitch(root, &blind);
+    if (IUSnoopNumber(root, &pointing) == 0)
+    {
+        /* add X/YVEL to median arrays and look for max FE */
+        addMedianVels();
+        checkMaxFE();
+
+        return true;
+    }
+
+    /* capture commanded velocity if being set and recognized */
+    if (!IUSnoopNumber(root, &setvelocity))
+    {
+        if (setvelocity.s != IPS_IDLE)
+        {
+            havel  = setvelocity.np[HA_SV].value * 3600;	/* want as/s */
+            decvel = setvelocity.np[DEC_SV].value * 3600;	/* want as/s */
+            IDLog("Snoop: HAVEL = %g DECVEL = %g\n", havel, decvel);
+        }
+        else
+        {
+            havel =  0.0;
+            decvel = 0.0;
+        }
+
+        return true;
+    }
+
+    return INDI::CCD::ISSnoopDevice(root);
+}
+
+/********************************************************************************
+* check X/YFE_TP as possible new extremes.
+********************************************************************************/
+void Kepler::checkMaxFE()
+{
+    double newxfe = pointing.np[XFE_TP].value;
+    double newyfe = pointing.np[YFE_TP].value;
+
+    if (fabs(newxfe) > fabs(maxxfe))
+    {
+        maxxfe = newxfe;
+    }
+
+    if (fabs(newyfe) > fabs(maxyfe))
+    {
+        maxyfe = newyfe;
+    }
+}
+
+/********************************************************************************
+* init arrays used to accumulate median velocities
+********************************************************************************/
+void Kepler::initMedianVels()
+{
+    xvels = (double *) (realloc(xvels, 1 * sizeof(double)));
+    nxvels = 0;
+    yvels = (double *) (realloc(yvels, 1 * sizeof(double)));
+    nyvels = 0;
+}
+
+/********************************************************************************
+* add X/YVEL_TP to the median arrays
+********************************************************************************/
+void Kepler::addMedianVels()
+{
+    xvels = (double *) realloc(xvels, (nxvels + 1) * sizeof(double));
+    xvels[nxvels++] = pointing.np[XVEL_TP].value;
+    yvels = (double *) realloc(yvels, (nyvels + 1) * sizeof(double));
+    yvels[nyvels++] = pointing.np[YVEL_TP].value;
+}
+
+/********************************************************************************
+* report median velocities
+********************************************************************************/
+void Kepler::getMedianVels(double *mxvp, double *myvp)
+{
+    if (nxvels > 0)
+    {
+        qsort(xvels, nxvels, sizeof(double), med_cmpf);
+        *mxvp = xvels[nxvels / 2];
+    }
+    else
+    {
+        *mxvp = 0;
+    }
+
+    if (nyvels > 0)
+    {
+        qsort(yvels, nyvels, sizeof(double), med_cmpf);
+        *myvp = yvels[nyvels / 2];
+    }
+    else
+    {
+        *myvp = 0;
+    }
 }
 
 /********************************************************************************
@@ -1150,6 +1426,32 @@ void Kepler::addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRe
             fitsKeywords.push_back({"MERGED_STDDEV", fproStats.statsMergedImage.dblStandardDeviation, 3, "Merged Standard Deviation"});
         }
     }
+
+#ifdef LEGACY_MODE
+    double mxv, myv;
+    char buf[64] = {0};
+    getMedianVels(&mxv, &myv);
+    fitsKeywords.push_back({"HA_RATE", mxv, 3, "Median HA rate, arcsec/s"});
+    fitsKeywords.push_back({"DEC_RATE", myv, 3, "Median Dec rate, arcsec/s"});
+    fitsKeywords.push_back({"MAXHTERR", maxxfe, 3, "Max HA tracking error, arcsecs"});
+    fitsKeywords.push_back({"MAXDTERR", maxyfe, 3, "Max Dec tracking error, arcsecs"});
+
+    fs_sexa(buf, pointing.np[RA2K_TP].value, 4, 36000);
+    fitsKeywords.push_back({"RA2K", buf, "RA J2K H:M:S"});
+    fs_sexa(buf, pointing.np[RAEOD_TP].value, 4, 36000);
+    fitsKeywords.push_back({"RA", buf, "RA EOD H:M:S"});
+    fs_sexa(buf, pointing.np[DEC2K_TP].value, 4, 36000);
+    fitsKeywords.push_back({"DEC2K", buf, "Dec J2K D:M:S"});
+    fs_sexa(buf, pointing.np[DECEOD_TP].value, 4, 36000);
+    fitsKeywords.push_back({"DEC", buf, "Dec EOD D:M:S"});
+    fs_sexa(buf, pointing.np[HA_TP].value, 4, 36000);
+    fitsKeywords.push_back({"HA", buf, "Hour angle H:M:S"});
+    fs_sexa(buf, pointing.np[AZ_TP].value, 4, 36000);
+    fitsKeywords.push_back({"AZ", buf, "Azimuth D:M:S"});
+    fs_sexa(buf, pointing.np[ALT_TP].value, 4, 36000);
+    fitsKeywords.push_back({"ALT", buf, "Altitude D:M:S"});
+
+#endif
 }
 
 /********************************************************************************
