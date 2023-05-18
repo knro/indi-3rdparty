@@ -1113,10 +1113,10 @@ bool Kepler::setup()
     }
 
 #ifdef LEGACY_MODE
-    EncodeFormatSP.reset();
-    EncodeFormatSP[FORMAT_NATIVE].setState(ISS_ON);
-    EncodeFormatSP.apply();
-    PrimaryCCD.setImageExtension("fit");
+    //    EncodeFormatSP.reset();
+    //    EncodeFormatSP[FORMAT_NATIVE].setState(ISS_ON);
+    //    EncodeFormatSP.apply();
+    //    PrimaryCCD.setImageExtension("fit");
 #endif
 
     m_TemperatureTimer.start();
@@ -1427,6 +1427,13 @@ void Kepler::addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRe
         }
     }
 
+    FPROFrame_MetaValueInitBin(fproUnpacked.pMergedMetaData, fproUnpacked.uiMetaDataSize);
+
+    FPROMETAVALUE value;
+    FPROFrame_MetaValueGet(FPRO_META_KEYS::META_KEY_CAMERA_MODEL, &value);
+    fitsKeywords.push_back({"MODEL", reinterpret_cast<char *>(value.cStringValue), "Model"});
+
+
 #ifdef LEGACY_MODE
     double mxv, myv;
     char buf[64] = {0};
@@ -1436,6 +1443,7 @@ void Kepler::addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRe
     fitsKeywords.push_back({"MAXHTERR", maxxfe, 3, "Max HA tracking error, arcsecs"});
     fitsKeywords.push_back({"MAXDTERR", maxyfe, 3, "Max Dec tracking error, arcsecs"});
 
+    // Telescope
     fs_sexa(buf, pointing.np[RA2K_TP].value, 4, 36000);
     fitsKeywords.push_back({"RA2K", buf, "RA J2K H:M:S"});
     fs_sexa(buf, pointing.np[RAEOD_TP].value, 4, 36000);
@@ -1450,6 +1458,20 @@ void Kepler::addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRe
     fitsKeywords.push_back({"AZ", buf, "Azimuth D:M:S"});
     fs_sexa(buf, pointing.np[ALT_TP].value, 4, 36000);
     fitsKeywords.push_back({"ALT", buf, "Altitude D:M:S"});
+
+    // Environment
+    fitsKeywords.push_back({"HUMIDITY", envnow.np[HUMIDITY_NOW].value, 3, "Exterior humidity, percent"});
+    fitsKeywords.push_back({"AIRTEMP", envnow.np[TEMP_NOW].value, 3, "Exterior temp, deg C"});
+    fitsKeywords.push_back({"WINDSPD", envnow.np[WINDSPD_NOW].value, 3, "Wind speed, mps"});
+    fitsKeywords.push_back({"WINDDIR", envnow.np[WINDDIR_NOW].value, 3, "Wind dir, degs E of N"});
+
+    // Building
+    fitsKeywords.push_back({"BLDGT1", ownow.np[T1_OWNOW].value, 3, "Focus motor temp, C"});
+    fitsKeywords.push_back({"BLDGH1", ownow.np[H1_OWNOW].value, 3, "Camera humidity, %"});
+    fitsKeywords.push_back({"BLDGT2", ownow.np[T2_OWNOW].value, 3, "Lens temp, C"});
+    fitsKeywords.push_back({"BLDGH2", ownow.np[H2_OWNOW].value, 3, "Objective lens humidity, %"});
+    fitsKeywords.push_back({"BLDGT4", ownow.np[T4_OWNOW].value, 3, "Temperature at spider vane, C"});
+    fitsKeywords.push_back({"LBLIND", blind.sp[0].s == ISS_ON ? "Open" : "Closed", "Lens blind state"});
 
 #endif
 }
