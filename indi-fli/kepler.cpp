@@ -487,8 +487,14 @@ bool Kepler::initProperties()
     FanSP.fill(getDeviceName(), "FAN_CONTROL", "Fan", MAIN_CONTROL_TAB, IP_RW, ISR_1OFMANY, 60, IPS_IDLE);
 
     // Black Level
-    BlackLevelNP[0].fill("VALUE", "Value", "%.f", 0, 1000, 10, 0);
+    BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].fill("LDR", "LDR", "%.f", 0, 1000, 10, 0);
+    BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].fill("HDR", "HDR", "%.f", 0, 1000, 10, 0);
     BlackLevelNP.fill(getDeviceName(), "BLACK_LEVEL", "Black Level", IMAGE_SETTINGS_TAB, IP_RW, 60, IPS_IDLE);
+
+    // Black Sun Level
+    BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].fill("LDR", "LDR", "%.f", 0, 1000, 10, 0);
+    BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].fill("HDR", "HDR", "%.f", 0, 1000, 10, 0);
+    BlackSunLevelNP.fill(getDeviceName(), "BLACK_SUN_LEVEL", "Black Sun Level", IMAGE_SETTINGS_TAB, IP_RW, 60, IPS_IDLE);
 
     // GPS
     GPSStateLP[to_underlying(FPROGPSSTATE::FPRO_GPS_NOT_DETECTED)].fill("FPRO_GPS_NOT_DETECTED", "Not detected", IPS_IDLE);
@@ -581,6 +587,7 @@ bool Kepler::updateProperties()
         defineProperty(HighGainSP);
         defineProperty(FanSP);
         defineProperty(BlackLevelNP);
+        defineProperty(BlackSunLevelNP);
         defineProperty(GPSStateLP);
         defineProperty(RequestStatSP);
     }
@@ -593,6 +600,7 @@ bool Kepler::updateProperties()
         deleteProperty(HighGainSP);
         deleteProperty(FanSP);
         deleteProperty(BlackLevelNP);
+        deleteProperty(BlackSunLevelNP);
         deleteProperty(GPSStateLP);
         deleteProperty(RequestStatSP);
     }
@@ -612,7 +620,7 @@ bool Kepler::ISNewNumber(const char *dev, const char *name, double values[], cha
         {
             // N.B. for now apply to both channels. Perhaps add channel selection in the future?
             bool LDR = FPROSensor_SetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, values[0]) >= 0;
-            bool HDR = FPROSensor_SetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, values[0]) >= 0;
+            bool HDR = FPROSensor_SetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, values[1]) >= 0;
             if (LDR && HDR)
             {
                 BlackLevelNP.update(values, names, n);
@@ -621,6 +629,23 @@ bool Kepler::ISNewNumber(const char *dev, const char *name, double values[], cha
             else
                 BlackLevelNP.setState(IPS_ALERT);
             BlackLevelNP.apply();
+            return true;
+        }
+
+        // Black Sun Level
+        if (BlackSunLevelNP.isNameMatch(name))
+        {
+            // N.B. for now apply to both channels. Perhaps add channel selection in the future?
+            bool LDR = FPROSensor_SetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, values[0]) >= 0;
+            bool HDR = FPROSensor_SetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, values[1]) >= 0;
+            if (LDR && HDR)
+            {
+                BlackSunLevelNP.update(values, names, n);
+                BlackSunLevelNP.setState(IPS_OK);
+            }
+            else
+                BlackSunLevelNP.setState(IPS_ALERT);
+            BlackSunLevelNP.apply();
             return true;
         }
 
@@ -1005,7 +1030,7 @@ bool Kepler::setup()
         return false;
     }
 
-    pixelDepth = (pixelDepth > 8) ? 16 : 8;
+    pixelDepth = (pixelFormat > FPRO_PIXEL_FORMAT::PFORMAT_BAYER8_BGGR) ? 16 : 8;
 
     auto pixelSize = SensorPixelSize[static_cast<FPRODEVICETYPE>(m_CameraCapabilitiesList[to_underlying(
                                          FPROCAPS::FPROCAP_DEVICE_TYPE)])];
@@ -1105,11 +1130,27 @@ bool Kepler::setup()
 
     // Black level
     uint32_t blackLevel = 0;
-    // FIXME Need to add HDR + LDF channels to properties
     if (FPROSensor_GetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, &blackLevel))
     {
-        BlackLevelNP[0].setValue(blackLevel);
+        BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setValue(blackLevel);
         BlackLevelNP.setState(IPS_OK);
+    }
+    if (FPROSensor_GetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, &blackLevel))
+    {
+        BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setValue(blackLevel);
+        BlackLevelNP.setState(IPS_OK);
+    }
+
+    // Black Sun level
+    if (FPROSensor_GetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, &blackLevel))
+    {
+        BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setValue(blackLevel);
+        BlackSunLevelNP.setState(IPS_OK);
+    }
+    if (FPROSensor_GetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, &blackLevel))
+    {
+        BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setValue(blackLevel);
+        BlackSunLevelNP.setState(IPS_OK);
     }
 
 #ifdef LEGACY_MODE
@@ -1436,42 +1477,54 @@ void Kepler::addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRe
 
 #ifdef LEGACY_MODE
     double mxv, myv;
-    char buf[64] = {0};
     getMedianVels(&mxv, &myv);
-    fitsKeywords.push_back({"HA_RATE", mxv, 3, "Median HA rate, arcsec/s"});
-    fitsKeywords.push_back({"DEC_RATE", myv, 3, "Median Dec rate, arcsec/s"});
-    fitsKeywords.push_back({"MAXHTERR", maxxfe, 3, "Max HA tracking error, arcsecs"});
-    fitsKeywords.push_back({"MAXDTERR", maxyfe, 3, "Max Dec tracking error, arcsecs"});
+    if (mxv || myv)
+    {
+        fitsKeywords.push_back({"HA_RATE", mxv, 3, "Median HA rate, arcsec/s"});
+        fitsKeywords.push_back({"DEC_RATE", myv, 3, "Median Dec rate, arcsec/s"});
+        fitsKeywords.push_back({"MAXHTERR", maxxfe, 3, "Max HA tracking error, arcsecs"});
+        fitsKeywords.push_back({"MAXDTERR", maxyfe, 3, "Max Dec tracking error, arcsecs"});
+    }
 
-    // Telescope
-    fs_sexa(buf, pointing.np[RA2K_TP].value, 4, 36000);
-    fitsKeywords.push_back({"RA2K", buf, "RA J2K H:M:S"});
-    fs_sexa(buf, pointing.np[RAEOD_TP].value, 4, 36000);
-    fitsKeywords.push_back({"RA", buf, "RA EOD H:M:S"});
-    fs_sexa(buf, pointing.np[DEC2K_TP].value, 4, 36000);
-    fitsKeywords.push_back({"DEC2K", buf, "Dec J2K D:M:S"});
-    fs_sexa(buf, pointing.np[DECEOD_TP].value, 4, 36000);
-    fitsKeywords.push_back({"DEC", buf, "Dec EOD D:M:S"});
-    fs_sexa(buf, pointing.np[HA_TP].value, 4, 36000);
-    fitsKeywords.push_back({"HA", buf, "Hour angle H:M:S"});
-    fs_sexa(buf, pointing.np[AZ_TP].value, 4, 36000);
-    fitsKeywords.push_back({"AZ", buf, "Azimuth D:M:S"});
-    fs_sexa(buf, pointing.np[ALT_TP].value, 4, 36000);
-    fitsKeywords.push_back({"ALT", buf, "Altitude D:M:S"});
+    if (pointing.np[RA2K_TP].value > 0)
+    {
+        // Telescope
+        char buf[64] = {0};
+        fs_sexa(buf, pointing.np[RA2K_TP].value, 4, 36000);
+        fitsKeywords.push_back({"RA2K", buf, "RA J2K H:M:S"});
+        fs_sexa(buf, pointing.np[RAEOD_TP].value, 4, 36000);
+        fitsKeywords.push_back({"RA", buf, "RA EOD H:M:S"});
+        fs_sexa(buf, pointing.np[DEC2K_TP].value, 4, 36000);
+        fitsKeywords.push_back({"DEC2K", buf, "Dec J2K D:M:S"});
+        fs_sexa(buf, pointing.np[DECEOD_TP].value, 4, 36000);
+        fitsKeywords.push_back({"DEC", buf, "Dec EOD D:M:S"});
+        fs_sexa(buf, pointing.np[HA_TP].value, 4, 36000);
+        fitsKeywords.push_back({"HA", buf, "Hour angle H:M:S"});
+        fs_sexa(buf, pointing.np[AZ_TP].value, 4, 36000);
+        fitsKeywords.push_back({"AZ", buf, "Azimuth D:M:S"});
+        fs_sexa(buf, pointing.np[ALT_TP].value, 4, 36000);
+        fitsKeywords.push_back({"ALT", buf, "Altitude D:M:S"});
+    }
 
-    // Environment
-    fitsKeywords.push_back({"HUMIDITY", envnow.np[HUMIDITY_NOW].value, 3, "Exterior humidity, percent"});
-    fitsKeywords.push_back({"AIRTEMP", envnow.np[TEMP_NOW].value, 3, "Exterior temp, deg C"});
-    fitsKeywords.push_back({"WINDSPD", envnow.np[WINDSPD_NOW].value, 3, "Wind speed, mps"});
-    fitsKeywords.push_back({"WINDDIR", envnow.np[WINDDIR_NOW].value, 3, "Wind dir, degs E of N"});
+    if (envnow.np[HUMIDITY_NOW].value > 0)
+    {
+        // Environment
+        fitsKeywords.push_back({"HUMIDITY", envnow.np[HUMIDITY_NOW].value, 3, "Exterior humidity, percent"});
+        fitsKeywords.push_back({"AIRTEMP", envnow.np[TEMP_NOW].value, 3, "Exterior temp, deg C"});
+        fitsKeywords.push_back({"WINDSPD", envnow.np[WINDSPD_NOW].value, 3, "Wind speed, mps"});
+        fitsKeywords.push_back({"WINDDIR", envnow.np[WINDDIR_NOW].value, 3, "Wind dir, degs E of N"});
+    }
 
     // Building
-    fitsKeywords.push_back({"BLDGT1", ownow.np[T1_OWNOW].value, 3, "Focus motor temp, C"});
-    fitsKeywords.push_back({"BLDGH1", ownow.np[H1_OWNOW].value, 3, "Camera humidity, %"});
-    fitsKeywords.push_back({"BLDGT2", ownow.np[T2_OWNOW].value, 3, "Lens temp, C"});
-    fitsKeywords.push_back({"BLDGH2", ownow.np[H2_OWNOW].value, 3, "Objective lens humidity, %"});
-    fitsKeywords.push_back({"BLDGT4", ownow.np[T4_OWNOW].value, 3, "Temperature at spider vane, C"});
-    fitsKeywords.push_back({"LBLIND", blind.sp[0].s == ISS_ON ? "Open" : "Closed", "Lens blind state"});
+    if (ownow.np[H2_OWNOW].value > 0)
+    {
+        fitsKeywords.push_back({"BLDGT1", ownow.np[T1_OWNOW].value, 3, "Focus motor temp, C"});
+        fitsKeywords.push_back({"BLDGH1", ownow.np[H1_OWNOW].value, 3, "Camera humidity, %"});
+        fitsKeywords.push_back({"BLDGT2", ownow.np[T2_OWNOW].value, 3, "Lens temp, C"});
+        fitsKeywords.push_back({"BLDGH2", ownow.np[H2_OWNOW].value, 3, "Objective lens humidity, %"});
+        fitsKeywords.push_back({"BLDGT4", ownow.np[T4_OWNOW].value, 3, "Temperature at spider vane, C"});
+        fitsKeywords.push_back({"LBLIND", blind.sp[0].s == ISS_ON ? "Open" : "Closed", "Lens blind state"});
+    }
 
 #endif
 }

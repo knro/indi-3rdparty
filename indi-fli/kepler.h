@@ -166,7 +166,10 @@ class Kepler : public INDI::CCD
         };
 
         // Black Level Adjust
-        INDI::PropertyNumber BlackLevelNP {1};
+        INDI::PropertyNumber BlackLevelNP {2};
+
+        // Black Sun Level Adjust
+        INDI::PropertyNumber BlackSunLevelNP {2};
 
         // GPS State
         INDI::PropertyLight GPSStateLP {4};
