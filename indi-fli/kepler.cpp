@@ -1607,7 +1607,7 @@ void Kepler::addMetadataFITSHeader(std::vector<INDI::FITSRecord> &fitsKeywords,
     {
         auto integer = static_cast<uint32_t>(value.dblValue);
         auto isEast = (integer >> 31) ? true : false;
-        auto degrees = ((integer >> 1) - 10000.0) / 600000.0 * (isEast ? 1 : -1);
+        auto degrees = ((integer & 0x7FFFFFFF) - 10000.0) / 600000.0 * (isEast ? 1 : -1);
         char longitude[32] = {0};
         fs_sexa(longitude, degrees, 2, 360000);
         fitsKeywords.push_back({keyword.c_str(), longitude, comment.c_str()});
@@ -1616,7 +1616,7 @@ void Kepler::addMetadataFITSHeader(std::vector<INDI::FITSRecord> &fitsKeywords,
     {
         auto integer = static_cast<uint32_t>(value.dblValue);
         auto isNorth = (integer >> 31) ? true : false;
-        auto degrees = ((integer >> 1) - 10000.0) / 600000.0 * (isNorth ? 1 : -1);
+        auto degrees = ((integer & 0x7FFFFFFF) - 10000.0) / 600000.0 * (isNorth ? 1 : -1);
         char latitude[32] = {0};
         fs_sexa(latitude, degrees, 2, 360000);
         fitsKeywords.push_back({keyword.c_str(), latitude, comment.c_str()});
