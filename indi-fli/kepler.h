@@ -138,6 +138,7 @@ class Kepler : public INDI::CCD
 
         virtual void addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRecord> &fitsKeywords) override;
         virtual void UploadComplete(INDI::CCDChip *targetChip) override;
+        virtual void activeDevicesUpdated() override;
 
     private:
 

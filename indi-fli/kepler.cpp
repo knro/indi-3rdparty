@@ -1474,7 +1474,8 @@ void Kepler::addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRe
     addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_BACK_SIDE_ILLUMINATED, "BKSDILL", "Back Side Illuminated", 0);
     addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_BLACK_LEVEL_ADJUST, "BLKLVLAD", "Black Level Adjust value", 0);
     addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_BLACK_SUN_ADJUST, "BLKLVLSN", "Black Level Sun value", 0);
-    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_DEAD_PIXEL_CORRECTION, "DEADPXCR", "Dead Pixel Correction flag", 0);
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_DEAD_PIXEL_CORRECTION, "DEADPXCR",
+                          "Dead Pixel Correction flag", 0);
     addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_FRAME_NUMBER, "FRAMENUM", "Frame Number", 0);
     addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_GAIN_LOW, "GAINLOW", "Low Gain Value");
     addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_GAIN_GLOBAL, "GAINGLOBAL", "Global Gain Value");
@@ -1484,7 +1485,8 @@ void Kepler::addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRe
     addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_SERIAL_NUMBER, "SERIAL", "Serial Number");
     addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_GPS_LOCK, "GPS_LOCK", "GPS Present at Capture Time", 0);
     addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_HDR_MODE, "HDR-MODE", "Image captured in HDR Mode");
-    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_HORIZONTAL_SCAN_DIRECTION_INVERT, "HRZDIRIN", "Horizontal Scan Direction Invert flag", 0);
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_HORIZONTAL_SCAN_DIRECTION_INVERT, "HRZDIRIN",
+                          "Horizontal Scan Direction Invert flag", 0);
 
     // TODO
     /*
@@ -1622,4 +1624,19 @@ void Kepler::UploadComplete(INDI::CCDChip *targetChip)
     if (RequestStatSP.findOnSwitchIndex() == INDI_ENABLED)
         FPROFrame_FreeUnpackedBuffers(&fproUnpacked);
     FPROFrame_FreeUnpackedStatistics(&fproStats);
+}
+
+/********************************************************************************
+*
+********************************************************************************/
+void Kepler::activeDevicesUpdated()
+{
+#ifdef LEGACY_MODE
+    IDSnoopDevice("Telescope", "Pointing");
+    IDSnoopDevice("Telescope", "SetCatalog");
+    IDSnoopDevice("Telescope", "SetVelocity");
+    IDSnoopDevice("Environment", "Now");
+    IDSnoopDevice("1-Wire", "Now");
+    IDSnoopDevice("1-Wire", "Blind");
+#endif
 }
