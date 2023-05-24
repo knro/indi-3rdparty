@@ -1470,9 +1470,70 @@ void Kepler::addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRe
 
     FPROFrame_MetaValueInitBin(fproUnpacked.pMergedMetaData, fproUnpacked.uiMetaDataSize);
 
-    FPROMETAVALUE value;
-    FPROFrame_MetaValueGet(FPRO_META_KEYS::META_KEY_CAMERA_MODEL, &value);
-    fitsKeywords.push_back({"MODEL", reinterpret_cast<char *>(value.cStringValue), "Model"});
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_CAMERA_MODEL, "MODEL", "Model");
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_BACK_SIDE_ILLUMINATED, "BKSDILL", "Back Side Illuminated", 0);
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_BLACK_LEVEL_ADJUST, "BLKLVLAD", "Black Level Adjust value", 0);
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_BLACK_SUN_ADJUST, "BLKLVLSN", "Black Level Sun value", 0);
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_DEAD_PIXEL_CORRECTION, "DEADPXCR", "Dead Pixel Correction flag", 0);
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_FRAME_NUMBER, "FRAMENUM", "Frame Number", 0);
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_GAIN_LOW, "GAINLOW", "Low Gain Value");
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_GAIN_GLOBAL, "GAINGLOBAL", "Global Gain Value");
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_GAIN_HIGH, "GAINHIGH", "High Gain Value");
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_GEO_LAT_RAW, "GEO_LAT", "Geocentric latitude [deg]");
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_GEO_LONG_RAW, "GEO_LONG", "Geocentric longitude [deg]");
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_SERIAL_NUMBER, "SERIAL", "Serial Number");
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_GPS_LOCK, "GPS_LOCK", "GPS Present at Capture Time", 0);
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_HDR_MODE, "HDR-MODE", "Image captured in HDR Mode");
+    addMetadataFITSHeader(fitsKeywords, FPRO_META_KEYS::META_KEY_HORIZONTAL_SCAN_DIRECTION_INVERT, "HRZDIRIN", "Horizontal Scan Direction Invert flag", 0);
+
+    // TODO
+    /*
+    META_KEY_HIGH_ADUE,
+    META_KEY_HORIZONTAL_PIXELS,
+    META_KEY_HORIZONTAL_PIXEL_SIZE,
+    META_KEY_ILLUMINATION_START_DELAY,
+    META_KEY_ILLUMINATION_STOP_DELAY,
+    META_KEY_IMAGE_HEIGHT,
+    META_KEY_IMAGE_START_COLUMN,
+    META_KEY_IMAGE_START_ROW,
+    META_KEY_IMAGE_STOP_COLUMN,
+    META_KEY_IMAGE_STOP_ROW,
+    META_KEY_IMAGE_START_EXPOSURE_ROW,
+    META_KEY_IS_HIGH_FRAME,
+    META_KEY_IS_HIGH_GAIN_ONLY_FRAME,
+    META_KEY_IS_MERGED_FRAME,
+    META_KEY_IS_SOFTWARE_BINNING,
+    META_KEY_IS_STACKED_FRAME,
+    META_KEY_LOW_DARK_CURRENT,
+    META_KEY_LOW_NOISE,
+    META_KEY_MERGE_GAIN_RATIO,
+    META_KEY_MERGE_LINE_OFFSET,
+    META_KEY_NON_ROW_ALLIGNED_IMAGE,
+    META_KEY_NUM_OF_DATA_CHANNELS,
+    META_KEY_PIXEL_ORDERED_IMAGE,
+    META_KEY_POST_REFERENCE_ROW,
+    META_KEY_PRE_REFERENCE_ROW,
+    META_KEY_POST_REFERENCE_PIXELS_PER_ROW,
+    META_KEY_PRE_REFERENCE_PIXELS_PER_ROW,
+    META_KEY_SENSOR_PIXEL_BIT_DEPTH,
+    META_KEY_SENSOR_READ_QUADRANTS,
+    META_KEY_SENSOR_CHIP_TEMPERATURE,
+    META_KEY_SHUTTER_CLOSE_DELAY,
+    META_KEY_SHUTTER_OPEN_DELAY,
+    META_KEY_TEMPERATURE_SETPOINT,
+    META_KEY_TRACKING_FRAMES_PER_IMAGE,
+    META_KEY_TRACKING_START_COLUMN,
+    META_KEY_TRACKING_START_ROW,
+    META_KEY_TRACKING_STOP_COLUMN,
+    META_KEY_TRACKING_STOP_ROW,
+    META_KEY_USE_SHIFTED_AVERAGING,
+    META_KEY_VERSION_API,
+    META_KEY_VERSION_APPLICATION,
+    META_KEY_VERSION_FIRMWARE,
+    META_KEY_VERTICAL_PIXELS,
+    META_KEY_VERTICAL_PIXEL_SIZE,
+    META_KEY_VERTICAL_SCAN_DIRECTION_INVERT,
+    */
 
 
 #ifdef LEGACY_MODE
@@ -1527,6 +1588,23 @@ void Kepler::addFITSKeywords(INDI::CCDChip *targetChip, std::vector<INDI::FITSRe
     }
 
 #endif
+}
+
+/********************************************************************************
+*
+********************************************************************************/
+void Kepler::addMetadataFITSHeader(std::vector<INDI::FITSRecord> &fitsKeywords,
+                                   FPRO_META_KEYS id,
+                                   const std::string &keyword,
+                                   const std::string &comment,
+                                   int precision)
+{
+    FPROMETAVALUE value;
+    FPROFrame_MetaValueGet(id, &value);
+    if (value.iByteLength > 0)
+        fitsKeywords.push_back({keyword.c_str(), reinterpret_cast<char *>(value.cStringValue), comment.c_str()});
+    else
+        fitsKeywords.push_back({keyword.c_str(), value.dblValue, precision, comment.c_str()});
 }
 
 /********************************************************************************

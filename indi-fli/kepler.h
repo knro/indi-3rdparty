@@ -141,6 +141,19 @@ class Kepler : public INDI::CCD
 
     private:
 
+        /**
+         * @brief addMetadataFITSHeader Add new FITS header value
+         * @param fitsKeywords Reference to FITS keywords list to add new header to.
+         * @param id LIBFLIPRO Metadata ID
+         * @param keyword Header keyword field
+         * @param comment Header comment field
+         * @param precision for double keywords, the precision that should be used.
+         */
+      void addMetadataFITSHeader(std::vector<INDI::FITSRecord> &fitsKeywords,
+                                 FPRO_META_KEYS id,
+                                 const std::string &keyword,
+                                 const std::string &comment, int precision = 3);
+
         //****************************************************************************************
         // INDI Properties
         //****************************************************************************************
