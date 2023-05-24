@@ -1603,10 +1603,30 @@ void Kepler::addMetadataFITSHeader(std::vector<INDI::FITSRecord> &fitsKeywords,
 {
     FPROMETAVALUE value;
     FPROFrame_MetaValueGet(id, &value);
-    if (value.iByteLength > 0)
+    if (id == FPRO_META_KEYS::META_KEY_GEO_LAT_RAW)
+    {
+        auto integer = static_cast<uint32_t>(value.dblValue);
+        auto isEast = (integer >> 31) ? true : false;
+        auto degrees = ((integer >> 1) - 10000.0) / 600000.0 * (isEast ? 1 : -1);
+        char longitude[32] = {0};
+        fs_sexa(longitude, degrees, 2, 360000);
+        fitsKeywords.push_back({keyword.c_str(), longitude, comment.c_str()});
+    }
+    else if (id == FPRO_META_KEYS::META_KEY_GEO_LONG_RAW)
+    {
+        auto integer = static_cast<uint32_t>(value.dblValue);
+        auto isNorth = (integer >> 31) ? true : false;
+        auto degrees = ((integer >> 1) - 10000.0) / 600000.0 * (isNorth ? 1 : -1);
+        char latitude[32] = {0};
+        fs_sexa(latitude, degrees, 2, 360000);
+        fitsKeywords.push_back({keyword.c_str(), latitude, comment.c_str()});
+    }
+    else if (value.iByteLength > 0)
         fitsKeywords.push_back({keyword.c_str(), reinterpret_cast<char *>(value.cStringValue), comment.c_str()});
     else
+    {
         fitsKeywords.push_back({keyword.c_str(), value.dblValue, precision, comment.c_str()});
+    }
 }
 
 /********************************************************************************
