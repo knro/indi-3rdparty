@@ -1134,12 +1134,14 @@ bool Kepler::setup()
     if (FPROSensor_GetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, &blackLevel) >= 0)
     {
         BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setMax(maxBlackLevel);
+        BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setStep(maxBlackLevel / 50.0);
         BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setValue(blackLevel);
         BlackLevelNP.setState(IPS_OK);
     }
     if (FPROSensor_GetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, &blackLevel) >= 0)
     {
         BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setMax(maxBlackLevel);
+        BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setStep(maxBlackLevel / 50.0);
         BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setValue(blackLevel);
         BlackLevelNP.setState(IPS_OK);
     }
@@ -1149,12 +1151,14 @@ bool Kepler::setup()
     if (FPROSensor_GetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, &blackLevel) >= 0)
     {
         BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setMax(maxSunLevel);
+        BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setStep(maxSunLevel / 50.0);
         BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setValue(blackLevel);
         BlackSunLevelNP.setState(IPS_OK);
     }
     if (FPROSensor_GetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, &blackLevel) >= 0)
     {
         BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setMax(maxSunLevel);
+        BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setStep(maxSunLevel / 50.0);
         BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setValue(blackLevel);
         BlackSunLevelNP.setState(IPS_OK);
     }
