@@ -1131,13 +1131,13 @@ bool Kepler::setup()
     // Black level
     auto maxBlackLevel = m_CameraCapabilitiesList[to_underlying(FPROCAPS::FPROCAP_BLACK_LEVEL_MAX)];
     uint32_t blackLevel = 0;
-    if (FPROSensor_GetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, &blackLevel))
+    if (FPROSensor_GetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, &blackLevel) >= 0)
     {
         BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setMax(maxBlackLevel);
         BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setValue(blackLevel);
         BlackLevelNP.setState(IPS_OK);
     }
-    if (FPROSensor_GetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, &blackLevel))
+    if (FPROSensor_GetBlackLevelAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, &blackLevel) >= 0)
     {
         BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setMax(maxBlackLevel);
         BlackLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setValue(blackLevel);
@@ -1146,13 +1146,13 @@ bool Kepler::setup()
 
     // Black Sun level
     auto maxSunLevel = m_CameraCapabilitiesList[to_underlying(FPROCAPS::FPROCAP_BLACK_SUN_MAX)];
-    if (FPROSensor_GetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, &blackLevel))
+    if (FPROSensor_GetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR, &blackLevel) >= 0)
     {
         BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setMax(maxSunLevel);
         BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_LDR)].setValue(blackLevel);
         BlackSunLevelNP.setState(IPS_OK);
     }
-    if (FPROSensor_GetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, &blackLevel))
+    if (FPROSensor_GetBlackSunAdjust(m_CameraHandle, FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR, &blackLevel) >= 0)
     {
         BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setMax(maxSunLevel);
         BlackSunLevelNP[to_underlying(FPROBLACKADJUSTCHAN::FPRO_BLACK_ADJUST_CHAN_HDR)].setValue(blackLevel);
