@@ -1010,6 +1010,9 @@ bool Kepler::setup()
     // Get # of supported formats first
     FPROFrame_GetSupportedPixelFormats(m_CameraHandle, nullptr, &m_FormatsCount);
 
+    // Do not read temperature while exposing
+    FPROCtrl_SetSensorTemperatureReadEnable(m_CameraHandle, false);
+
     // Clear buffer
     delete [] m_FormatList;
     m_FormatList = new FPRO_PIXEL_FORMAT[m_FormatsCount];
@@ -1400,6 +1403,10 @@ void Kepler::readTemperature()
 ********************************************************************************/
 void Kepler::readGPS()
 {
+    // Do not read GPS while exposing
+    if (PrimaryCCD.isExposing())
+        return;
+
     FPROGPSSTATE state;
     uint32_t trackingoptions;
     int result = 0;
