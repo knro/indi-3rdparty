@@ -546,6 +546,15 @@ bool Kepler::initProperties()
     IDSnoopDevice("1-Wire", "Now");
     IDSnoopDevice("1-Wire", "Blind");
 
+    // Trigger connection by default
+    INDI::Timer::singleShot(500, [this]()
+    {
+        Connect();
+        setConnected(true);
+        updateProperties();
+        loadConfig();
+    });
+
 #endif
     addAuxControls();
 
